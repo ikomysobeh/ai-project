@@ -1,0 +1,22 @@
+# docker-compose.yml
+
+# This file is for production mode only.
+
+services:
+  web_ai:
+    build: .
+    image: cornatul/webai.ai
+    container_name: web_ai_server
+    restart: always
+    ports:
+      - "6969:6969"
+    env_file:
+      - .env
+    environment:
+      - PYTHONPATH=/app/src
+      - PLAYWRIGHT_HEADLESS=true
+      - LOG_LEVEL=${LOG_LEVEL:-}
+      - DISABLE_ACCESS_LOGS=${DISABLE_ACCESS_LOGS:-false}
+    volumes:
+      - ./config.conf:/app/config.conf:ro
+      - ./runtime:/app/runtime

@@ -1,0 +1,15 @@
+# Root-level env files (see .env.example for the template)
+.env
+.env.backup
+.env.*.local
+
+# Local Claude Code session settings (machine-specific, not project config)
+.claude/
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Editors (per-subproject .gitignore files handle their own, this covers root-level stragglers)
+.vscode/
+.idea/

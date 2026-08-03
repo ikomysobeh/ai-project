@@ -1,0 +1,654 @@
+/*
+  Ported from frontend-prototype.html verbatim, with one change: rules that
+  targeted `body`, `*`, `a`, `button`, `code` globally are scoped under
+  `.console` instead, since Inertia keeps one shared <body> across every
+  page (including the existing Tailwind/shadcn auth + settings pages) —
+  applying this design system globally would repaint the whole app, not
+  just the dashboard.
+*/
+.console {
+    --ink: #0d1117;
+    --panel: #161b22;
+    --panel-2: #1c232d;
+    --line: #2a3541;
+    --line-soft: #222b35;
+    --text: #e6edf3;
+    --muted: #8b98a5;
+    --faint: #5b6672;
+    --cyan: #39d0d8;
+    --cyan-dim: #1c6f74;
+    --amber: #e3b341;
+    --coral: #f76d6d;
+    --green: #3fb950;
+    --violet: #a874ff;
+    --radius: 10px;
+    --mono:
+        'SF Mono', ui-monospace, 'JetBrains Mono', 'Cascadia Code', Menlo,
+        Consolas, monospace;
+    --sans:
+        -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
+        Arial, sans-serif;
+
+    background: var(--ink);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+}
+.console code,
+.console .mono {
+    font-family: var(--mono);
+}
+.console a {
+    color: inherit;
+}
+.console button {
+    font-family: inherit;
+    cursor: pointer;
+}
+.console ::selection {
+    background: var(--cyan-dim);
+    color: #fff;
+}
+
+/* ---------- Shell ---------- */
+.console .app {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    min-height: 100vh;
+}
+.console .sidebar {
+    background: var(--panel);
+    border-right: 1px solid var(--line);
+    padding: 20px 14px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow: auto;
+}
+.console .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 10px 20px;
+}
+.console .brand .logo {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    flex: 0 0 28px;
+    background: linear-gradient(135deg, var(--cyan), var(--violet));
+    display: grid;
+    place-items: center;
+    font-weight: 800;
+    color: #06121a;
+    font-size: 15px;
+}
+.console .brand b {
+    font-size: 15px;
+    letter-spacing: 0.2px;
+}
+.console .brand small {
+    display: block;
+    color: var(--faint);
+    font-size: 11px;
+    font-family: var(--mono);
+}
+
+.console .nav-group {
+    margin-top: 14px;
+}
+.console .nav-label {
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--faint);
+    padding: 0 10px 6px;
+    font-weight: 600;
+}
+.console .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: 0;
+    color: var(--muted);
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-size: 13.5px;
+    margin-bottom: 2px;
+    transition: 0.12s;
+    text-decoration: none;
+}
+.console .nav-item .ico {
+    width: 16px;
+    text-align: center;
+    opacity: 0.85;
+    font-size: 14px;
+}
+.console .nav-item:hover {
+    background: var(--panel-2);
+    color: var(--text);
+}
+.console .nav-item.active {
+    background: var(--panel-2);
+    color: var(--text);
+}
+.console .nav-item.active .ico {
+    color: var(--cyan);
+}
+.console .nav-badge {
+    margin-left: auto;
+    font-size: 10px;
+    background: var(--line);
+    color: var(--muted);
+    padding: 1px 7px;
+    border-radius: 20px;
+    font-family: var(--mono);
+}
+
+.console .side-foot {
+    margin-top: 24px;
+    padding: 12px 10px;
+    border-top: 1px solid var(--line-soft);
+}
+.console .tenant {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.console .tenant .av {
+    width: 30px;
+    height: 30px;
+    border-radius: 7px;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    display: grid;
+    place-items: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--cyan);
+}
+.console .tenant small {
+    color: var(--faint);
+    font-size: 11px;
+}
+
+/* ---------- Main ---------- */
+.console .main {
+    min-width: 0;
+}
+.console .topbar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 28px;
+    border-bottom: 1px solid var(--line);
+    position: sticky;
+    top: 0;
+    background: rgba(13, 17, 23, 0.86);
+    backdrop-filter: blur(8px);
+    z-index: 5;
+}
+.console .topbar h1 {
+    font-size: 18px;
+    margin: 0;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+}
+.console .topbar .crumb {
+    color: var(--faint);
+    font-family: var(--mono);
+    font-size: 12px;
+}
+.console .spacer {
+    flex: 1;
+}
+.console .btn {
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    color: var(--text);
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 550;
+    transition: 0.12s;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+}
+.console .btn:hover {
+    border-color: #3b4a59;
+}
+.console .btn.primary {
+    background: linear-gradient(135deg, var(--cyan), #2bb6be);
+    color: #06121a;
+    border: 0;
+    font-weight: 700;
+}
+.console .btn.primary:hover {
+    filter: brightness(1.07);
+}
+.console .btn.ghost {
+    background: none;
+}
+.console .btn.sm {
+    padding: 5px 10px;
+    font-size: 12px;
+}
+.console .btn.danger {
+    color: var(--coral);
+    border-color: #43323a;
+}
+.console .btn.danger:hover {
+    background: #2a1e22;
+}
+.console .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.console .content {
+    padding: 24px 28px 64px;
+    max-width: 1180px;
+}
+
+/* ---------- Cards / grid ---------- */
+.console .grid {
+    display: grid;
+    gap: 16px;
+}
+.console .g-4 {
+    grid-template-columns: repeat(4, 1fr);
+}
+.console .g-3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+.console .g-2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+@media (max-width: 1000px) {
+    .console .g-4 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .console .g-3 {
+        grid-template-columns: 1fr;
+    }
+    .console .g-2 {
+        grid-template-columns: 1fr;
+    }
+}
+.console .card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 18px;
+}
+.console .card h3 {
+    margin: 0 0 3px;
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 550;
+}
+.console .stat {
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    font-family: var(--mono);
+}
+.console .stat .unit {
+    font-size: 14px;
+    color: var(--faint);
+    font-weight: 500;
+}
+.console .delta {
+    font-size: 12px;
+    margin-top: 6px;
+    font-family: var(--mono);
+}
+.console .delta.up {
+    color: var(--green);
+}
+.console .delta.down {
+    color: var(--coral);
+}
+
+.console .section-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 30px 0 14px;
+}
+.console .section-title h2 {
+    font-size: 15px;
+    margin: 0;
+    font-weight: 600;
+}
+.console .section-title .hint {
+    color: var(--faint);
+    font-size: 12px;
+    font-family: var(--mono);
+}
+.console .section-title .spacer {
+    flex: 1;
+}
+
+/* ---------- Table ---------- */
+.console .tbl {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+.console .tbl th {
+    text-align: left;
+    color: var(--faint);
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0 14px 10px;
+    border-bottom: 1px solid var(--line);
+}
+.console .tbl td {
+    padding: 13px 14px;
+    border-bottom: 1px solid var(--line-soft);
+    vertical-align: middle;
+}
+.console .tbl tr:last-child td {
+    border-bottom: 0;
+}
+.console .tbl tr:hover td {
+    background: #12171e;
+}
+.console .tbl .mono {
+    font-size: 12.5px;
+}
+
+/* ---------- Pills ---------- */
+.console .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-family: var(--mono);
+    white-space: nowrap;
+}
+.console .pill:before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+.console .pill.active {
+    background: #0e2a2b;
+    color: var(--cyan);
+}
+.console .pill.active:before {
+    background: var(--cyan);
+    box-shadow: 0 0 8px var(--cyan);
+}
+.console .pill.cooling {
+    background: #2c2410;
+    color: var(--amber);
+}
+.console .pill.cooling:before {
+    background: var(--amber);
+}
+.console .pill.expired {
+    background: #2c1516;
+    color: var(--coral);
+}
+.console .pill.expired:before {
+    background: var(--coral);
+}
+.console .pill.ready {
+    background: #10241a;
+    color: var(--green);
+}
+.console .pill.ready:before {
+    background: var(--green);
+}
+.console .pill.muted {
+    background: var(--line);
+    color: var(--muted);
+}
+.console .pill.muted:before {
+    background: var(--faint);
+}
+.console .pill.rag {
+    background: #1e1630;
+    color: var(--violet);
+}
+.console .pill.rag:before {
+    background: var(--violet);
+}
+
+.console .tag {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    padding: 2px 7px;
+    border-radius: 6px;
+}
+
+/* ---------- Token/code block ---------- */
+.console .keyrow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.console .keyval {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--cyan);
+    background: var(--ink);
+    border: 1px solid var(--line);
+    padding: 6px 10px;
+    border-radius: 7px;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ---------- Empty / helper ---------- */
+.console .muted {
+    color: var(--muted);
+}
+.console .faint {
+    color: var(--faint);
+}
+.console .lead {
+    color: var(--muted);
+    font-size: 13.5px;
+    max-width: 640px;
+}
+.console .flow {
+    background: var(--ink);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 18px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--muted);
+    white-space: pre;
+    overflow: auto;
+    line-height: 1.7;
+}
+
+/* ---------- Modal ---------- */
+.console .modal-bg {
+    position: fixed;
+    inset: 0;
+    background: rgba(4, 7, 10, 0.66);
+    backdrop-filter: blur(3px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 40;
+    padding: 20px;
+}
+.console .modal {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    width: 100%;
+    max-width: 520px;
+    padding: 22px;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+}
+.console .modal h3 {
+    margin: 0 0 4px;
+    font-size: 16px;
+}
+.console .modal .lead {
+    margin-bottom: 16px;
+}
+.console .field {
+    margin-bottom: 14px;
+}
+.console .field label {
+    display: block;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 6px;
+    font-weight: 550;
+}
+.console .field input,
+.console .field select {
+    width: 100%;
+    background: var(--ink);
+    border: 1px solid var(--line);
+    color: var(--text);
+    padding: 9px 11px;
+    border-radius: 8px;
+    font-size: 13.5px;
+    font-family: var(--sans);
+}
+.console .field input:focus,
+.console .field select:focus {
+    outline: none;
+    border-color: var(--cyan);
+}
+.console .modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+/* ---------- Playground ---------- */
+.console .pg {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+@media (max-width: 900px) {
+    .console .pg {
+        grid-template-columns: 1fr;
+    }
+}
+.console .pg textarea {
+    width: 100%;
+    min-height: 120px;
+    background: var(--ink);
+    border: 1px solid var(--line);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 11px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    resize: vertical;
+}
+.console .pg .out {
+    background: var(--ink);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 14px;
+    font-size: 13px;
+    min-height: 120px;
+    white-space: pre-wrap;
+}
+.console .row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+.console select.inline {
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    color: var(--text);
+    padding: 7px 10px;
+    border-radius: 8px;
+    font-size: 13px;
+}
+.console .toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--muted);
+    cursor: pointer;
+    user-select: none;
+}
+.console .toggle input {
+    accent-color: var(--violet);
+    width: 15px;
+    height: 15px;
+}
+
+.console .hidden {
+    display: none !important;
+}
+.console .toast {
+    position: fixed;
+    bottom: 22px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    color: var(--text);
+    padding: 11px 18px;
+    border-radius: 10px;
+    font-size: 13px;
+    opacity: 0;
+    transition: 0.25s;
+    z-index: 60;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+    pointer-events: none;
+}
+.console .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+.console .toast .ok {
+    color: var(--green);
+}
+.console .toast .err {
+    color: var(--coral);
+}
+
+.console .note {
+    background: #12171e;
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--cyan);
+    padding: 12px 14px;
+    border-radius: 8px;
+    font-size: 12.5px;
+    color: var(--muted);
+    margin-top: 16px;
+}
+.console .note b {
+    color: var(--text);
+}
