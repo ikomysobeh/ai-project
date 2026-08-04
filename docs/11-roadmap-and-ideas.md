@@ -55,7 +55,8 @@ These aren't new features so much as loose ends from v1 itself, worth closing be
 
 ## RAG
 
-- 🟡 **More document types** — PDF and DOCX are the obvious next targets (v1 is `.txt`/`.md` only, specifically to avoid extractor complexity). URL ingestion (fetch + strip HTML) is a natural third.
+- 🟢 **URL ingestion** — fetch + strip HTML, a natural next source type now that PDF/DOCX (shipped 2026-08-03) cover the common document formats.
+- 🟢 **OCR for scanned/image-only PDFs** — the current PDF extractor only pulls an existing text layer; a scanned document with no text layer comes back empty and the upload is marked `failed`. Tesseract or a cloud OCR API would close this gap.
 - 🟡 **Hybrid search** — combine the existing pgvector cosine search with plain keyword/full-text search (Postgres `tsvector` is right there) and merge-rank results; pure embedding search misses exact-term matches (product codes, names) surprisingly often.
 - 🟢 **Chunk citations in the response** — since `RagRetriever` already knows which chunks were used, threading that through to the final response (even just as metadata) would let a caller show "sourced from: doc X, doc Y."
 - 🔴 **Team/shared knowledge bases** — explicitly deferred in v1 (KBs are owned by one user). Needs a real permissions model, not just a schema change.

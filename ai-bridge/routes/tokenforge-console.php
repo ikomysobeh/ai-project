@@ -3,6 +3,7 @@
 use App\Http\Controllers\Console\AccountsController;
 use App\Http\Controllers\Console\AdminController;
 use App\Http\Controllers\Console\AppsController;
+use App\Http\Controllers\Console\DocsController;
 use App\Http\Controllers\Console\KnowledgeController;
 use App\Http\Controllers\Console\PlaygroundController;
 use App\Http\Controllers\Console\TeamController;
@@ -28,6 +29,7 @@ Route::middleware(['auth', 'verified'])->prefix('console')->group(function () {
     Route::get('accounts', [AccountsController::class, 'index']);
     Route::get('knowledge', [KnowledgeController::class, 'index']);
     Route::get('playground', [PlaygroundController::class, 'index']);
+    Route::get('docs', [DocsController::class, 'index']);
 
     Route::middleware('role:owner,admin')->group(function () {
         Route::get('admin', [AdminController::class, 'index']);

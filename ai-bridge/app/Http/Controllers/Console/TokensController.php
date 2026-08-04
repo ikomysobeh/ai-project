@@ -39,6 +39,11 @@ class TokensController extends Controller
                 'daily_quota' => $token->daily_quota,
                 'last_used_at' => $token->last_used_at?->diffForHumans(),
                 'revoked' => $token->revoked_at !== null,
+                'expires_at' => $token->expires_at?->toIso8601String(),
+                'expired' => $token->expires_at !== null && $token->expires_at->isPast(),
+                // Tokens generated before this column existed have no
+                // recoverable raw value — only encrypted/hashed ones can.
+                'revealable' => $token->token_encrypted !== null,
             ]),
         ]);
     }

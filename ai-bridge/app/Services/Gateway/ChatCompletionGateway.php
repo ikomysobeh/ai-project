@@ -8,7 +8,6 @@ use App\Models\UsageRecord;
 use App\Services\Rag\RagRetriever;
 use App\Services\WebAiClient;
 use Illuminate\Http\Client\ConnectionException;
-use Illuminate\Http\Client\Response;
 
 /**
  * The actual gateway pipeline (Flow C, AI-BUILD-BRIEF.md §5.1) — extracted
@@ -17,8 +16,10 @@ use Illuminate\Http\Client\Response;
  * Playground (Console\PlaygroundController) can run the SAME real logic
  * (RAG, account rotation, usage logging) against an already-resolved App,
  * rather than duplicating it or forcing the Playground to fake a Bearer
- * token it can't actually have (tokens are shown once and never stored
- * in retrievable form — see ApiTokenController).
+ * token it can't actually have — the Playground is a session-authenticated
+ * dashboard user testing their own app, not a token holder, so it resolves
+ * the App directly instead of going through token auth (see
+ * PlaygroundController).
  */
 class ChatCompletionGateway
 {
@@ -79,9 +80,24 @@ class ChatCompletionGateway
 
             if ($response->successful()) {
                 $account->forceFill(['status' => 'active', 'last_used_at' => now()])->save();
-                $this->logUsage($app, $tokenId, $model, $startedAt, $usedRag, status: 'success', account: $account, response: $response);
 
-                return ['status' => $response->status(), 'body' => $response->json()];
+                $body = $response->json();
+                $promptTokens = TokenEstimator::count($this->messagesText($messages));
+                $completionTokens = TokenEstimator::count((string) ($body['choices'][0]['message']['content'] ?? ''));
+
+                // WebAI-to-API's own `usage` is always {0,0,0} — Gemini's web
+                // interface never reports real token counts (see
+                // TokenEstimator) — so replace it with our estimate rather
+                // than handing the caller a number we know is meaningless.
+                $body['usage'] = [
+                    'prompt_tokens' => $promptTokens,
+                    'completion_tokens' => $completionTokens,
+                    'total_tokens' => $promptTokens + $completionTokens,
+                ];
+
+                $this->logUsage($app, $tokenId, $model, $startedAt, $usedRag, status: 'success', account: $account, promptTokens: $promptTokens, completionTokens: $completionTokens);
+
+                return ['status' => $response->status(), 'body' => $body];
             }
 
             // Only these two are account-health problems worth rotating past;
@@ -125,23 +141,51 @@ class ChatCompletionGateway
         string $status,
         ?string $errorType = null,
         ?UpstreamAccount $account = null,
-        ?Response $response = null,
+        int $promptTokens = 0,
+        int $completionTokens = 0,
     ): void {
-        $usage = $response?->json('usage') ?? [];
-
         UsageRecord::create([
             'app_id' => $app->id,
             'token_id' => $tokenId,
             'upstream_account_id' => $account?->id,
             'model' => $model,
-            'prompt_tokens' => $usage['prompt_tokens'] ?? 0,
-            'completion_tokens' => $usage['completion_tokens'] ?? 0,
-            'total_tokens' => $usage['total_tokens'] ?? 0,
+            'prompt_tokens' => $promptTokens,
+            'completion_tokens' => $completionTokens,
+            'total_tokens' => $promptTokens + $completionTokens,
             'latency_ms' => (int) round((microtime(true) - $startedAt) * 1000),
             'status' => $status,
             'error_type' => $errorType,
             'used_rag' => $usedRag,
         ]);
+    }
+
+    /**
+     * Flattens every message's text into one string for token estimation —
+     * content is either a plain string or an array of OpenAI-style content
+     * parts (see docs/12-using-the-platform.md); only `type: text` parts
+     * carry estimable token cost, file parts don't.
+     *
+     * @param  array<int, array{role?: string, content?: mixed}>  $messages
+     */
+    private function messagesText(array $messages): string
+    {
+        $parts = [];
+
+        foreach ($messages as $message) {
+            $content = $message['content'] ?? null;
+
+            if (is_string($content)) {
+                $parts[] = $content;
+            } elseif (is_array($content)) {
+                foreach ($content as $part) {
+                    if (($part['type'] ?? null) === 'text' && isset($part['text'])) {
+                        $parts[] = $part['text'];
+                    }
+                }
+            }
+        }
+
+        return implode("\n", $parts);
     }
 
     /**

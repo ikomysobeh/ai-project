@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\Chunk;
 use App\Models\Document;
+use App\Services\Rag\DocumentTextExtractor;
 use App\Services\Rag\OllamaClient;
 use App\Services\Rag\TextChunker;
 use App\Support\Tenancy\TenantContext;
@@ -40,10 +41,12 @@ class IngestDocumentJob implements ShouldQueue
         app(TenantContext::class)->set($document->tenant_id);
 
         try {
-            $text = Storage::disk('local')->get($this->storagePath);
+            $extension = strtolower(pathinfo($this->storagePath, PATHINFO_EXTENSION));
+            $absolutePath = Storage::disk('local')->path($this->storagePath);
+            $text = DocumentTextExtractor::extract($absolutePath, $extension);
 
-            if ($text === null || trim($text) === '') {
-                throw new \RuntimeException('Uploaded document is empty.');
+            if (trim($text) === '') {
+                throw new \RuntimeException('Uploaded document has no extractable text.');
             }
 
             foreach (TextChunker::chunk($text) as $chunk) {

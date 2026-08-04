@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Console;
 use App\Http\Controllers\Controller;
 use App\Models\Application;
 use App\Services\Gateway\ChatCompletionGateway;
+use App\Services\Gateway\GatewayModelCatalog;
 use App\Services\WebAiClient;
-use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -27,7 +27,7 @@ class PlaygroundController extends Controller
                 'rag_ready' => $app->knowledgeBase?->status === 'ready',
                 'knowledge_base_name' => $app->knowledgeBase?->name,
             ]),
-            'models' => $this->modelIds($webAi),
+            'models' => GatewayModelCatalog::usableModelIds($webAi),
         ]);
     }
 
@@ -35,10 +35,9 @@ class PlaygroundController extends Controller
      * Runs a REAL request through the actual gateway pipeline
      * (ChatCompletionGateway — the same one /v1/chat/completions uses), just
      * resolving the app from the authenticated user's own apps instead of a
-     * Bearer token: tokens are shown once and never stored in retrievable
-     * form, so the playground can't "pick an existing token" the way a
-     * mocked UI might — this is the honest equivalent for an already
-     * session-authenticated dashboard user testing their own app.
+     * Bearer token — this is the honest equivalent for an already
+     * session-authenticated dashboard user testing their own app, rather
+     * than making the playground borrow one of the app's real tokens.
      */
     public function send(Request $request, int $app, ChatCompletionGateway $gateway): JsonResponse
     {
@@ -54,21 +53,5 @@ class PlaygroundController extends Controller
         $result = $gateway->run($app, $validated, tokenId: null);
 
         return response()->json($result['body'], $result['status']);
-    }
-
-    /**
-     * @return string[]
-     */
-    private function modelIds(WebAiClient $webAi): array
-    {
-        try {
-            $response = $webAi->models();
-
-            return $response->successful()
-                ? collect($response->json('data', []))->pluck('id')->all()
-                : [];
-        } catch (ConnectionException) {
-            return [];
-        }
     }
 }

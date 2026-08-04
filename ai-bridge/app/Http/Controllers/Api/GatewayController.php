@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Application;
 use App\Services\Gateway\ChatCompletionGateway;
+use App\Services\Gateway\GatewayModelCatalog;
 use App\Services\WebAiClient;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\JsonResponse;
@@ -52,6 +53,19 @@ class GatewayController extends Controller
             ], 502);
         }
 
-        return response()->json($response->json(), $response->status());
+        if (! $response->successful()) {
+            return response()->json($response->json(), $response->status());
+        }
+
+        // Only advertise models this gateway can actually serve — a
+        // playwright/*|atlas/* entry here would just 400 on first use
+        // (see GatewayModelCatalog).
+        $body = $response->json();
+        $body['data'] = collect($body['data'] ?? [])
+            ->filter(fn (array $model) => GatewayModelCatalog::isUsable($model['id'] ?? ''))
+            ->values()
+            ->all();
+
+        return response()->json($body, $response->status());
     }
 }

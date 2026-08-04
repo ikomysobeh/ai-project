@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Console;
 use App\Http\Controllers\Controller;
 use App\Models\Application;
 use App\Models\KnowledgeBase;
+use App\Services\Gateway\GatewayModelCatalog;
 use App\Services\WebAiClient;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -32,23 +33,7 @@ class AppsController extends Controller
                 ]),
             'knowledgeBases' => ($user->isAdmin() ? KnowledgeBase::query() : KnowledgeBase::where('user_id', $user->id))
                 ->get(['id', 'name']),
-            'models' => $this->modelIds($webAi),
+            'models' => GatewayModelCatalog::usableModelIds($webAi),
         ]);
-    }
-
-    /**
-     * @return string[]
-     */
-    private function modelIds(WebAiClient $webAi): array
-    {
-        try {
-            $response = $webAi->models();
-
-            return $response->successful()
-                ? collect($response->json('data', []))->pluck('id')->all()
-                : [];
-        } catch (\Illuminate\Http\Client\ConnectionException) {
-            return [];
-        }
     }
 }

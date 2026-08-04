@@ -38,6 +38,8 @@ export default function ConsoleLayout({
         { href: '/console/knowledge', label: 'Knowledge (RAG)', icon: '▦', badge: navCounts?.knowledgeBases },
     ];
 
+    const help: NavItem[] = [{ href: '/console/docs', label: 'Documentation', icon: '❖' }];
+
     const admin: NavItem[] = [
         { href: '/console/admin', label: 'Overview', icon: '◭' },
         { href: '/console/team', label: 'Team & Invites', icon: '◑' },
@@ -60,6 +62,7 @@ export default function ConsoleLayout({
                         <NavGroup label="Workspace" items={workspace} current={url} />
                         <NavGroup label="Sources" items={sources} current={url} />
                         {isAdmin && <NavGroup label="Admin" items={admin} current={url} />}
+                        <NavGroup label="Help" items={help} current={url} />
 
                         {tenant && (
                             <div className="side-foot">
