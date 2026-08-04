@@ -30,11 +30,11 @@ class ApiTokenController extends Controller
             ...$request->validated(),
             'prefix' => $generated['prefix'],
             'token_hash' => $generated['hash'],
+            'token_encrypted' => $generated['raw'],
         ]);
 
         return response()->json([
             'token' => $token,
-            // Shown once — the caller must copy it now, it can't be retrieved again.
             'raw_token' => $generated['raw'],
         ], 201);
     }
@@ -50,6 +50,20 @@ class ApiTokenController extends Controller
         Redis::del(ApiToken::cacheKeyFor($token->token_hash));
 
         return response()->json(status: 204);
+    }
+
+    /**
+     * Decrypts and returns the raw token value on demand. Deliberately a
+     * separate, explicit call rather than something included in index() —
+     * token_encrypted is hidden by default (see ApiToken::$hidden) so it's
+     * never sent along with the regular token list.
+     */
+    public function reveal(Request $request, int $token): JsonResponse
+    {
+        $token = ApiToken::with('app')->findOrFail($token);
+        $this->assertOwnsApp($request, $token->app);
+
+        return response()->json(['raw_token' => $token->token_encrypted]);
     }
 
     /**

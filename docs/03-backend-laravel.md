@@ -45,7 +45,7 @@ All under `ai-bridge/app/Models/`. Fillable/Hidden are declared via PHP 8 attrib
 | `User` | `users` | `tenant_id, name, email, password (hashed), role, status`. Uses `PasskeyAuthenticatable`, `TwoFactorAuthenticatable`. Not tenant-scoped (see above). |
 | `Invite` | `invites` | `email, role, signed_token, expires_at, used_at`. |
 | `Application` (table `apps`) | `apps` | `user_id, name, default_model, knowledge_base_id, status`. Named `Application` to avoid colliding with the root `App` namespace. Explicit FK `app_id` on its `tokens()`/`usageRecords()` relations (Eloquent would otherwise guess `application_id`). |
-| `ApiToken` | `api_tokens` | `app_id, name, prefix, token_hash (hidden), rate_limit, daily_quota, expires_at`. Statics: `generate()` → `{raw: 'tf_'.Str::random(40), hash, prefix: substr($raw,0,10)}`; `hash($raw)` = sha256; `cacheKeyFor($hash)` = `"api_token:{hash}"`. |
+| `ApiToken` | `api_tokens` | `app_id, name, prefix, token_hash (hidden), token_encrypted (hidden, encrypted cast), rate_limit, daily_quota, expires_at`. Statics: `generate()` → `{raw: 'tf_'.Str::random(40), hash, prefix: substr($raw,0,10)}`; `hash($raw)` = sha256; `cacheKeyFor($hash)` = `"api_token:{hash}"`. `token_hash` is the sole auth lookup path; `token_encrypted` exists only so the raw value can be decrypted again later via `ApiTokenController::reveal()` — never used for authentication. |
 | `UpstreamAccount` | `upstream_accounts` | `user_id, label, cookies_encrypted (encrypted:array, hidden), status, error_count, last_error`. `cookies_encrypted` holds `{psid, psidts}`, AES-encrypted via Laravel's `encrypted:array` cast (app-key based). Helpers: `markHealthy()`, `markExpired($reason)`, `markCoolingDown()`. See [06-gemini-accounts-and-webai.md](06-gemini-accounts-and-webai.md). |
 | `UsageRecord` | `usage_records` | `app_id, token_id, upstream_account_id, model, prompt/completion/total_tokens, latency_ms, status, error_type, used_rag`. No `updated_at` (`const UPDATED_AT = null`). |
 | `KnowledgeBase` | `knowledge_bases` | `user_id, name, embedding_model, status`. |
@@ -82,7 +82,9 @@ See [07-gateway-and-rag.md](07-gateway-and-rag.md).
 
 [`app/Services/WebAiClient.php`](../ai-bridge/app/Services/WebAiClient.php) is the **only** class in ai-bridge that talks to WebAI-to-API. Two methods:
 - `chatCompletions(array $payload, ?array $cookieOverride)` — posts to `/v1/temporary/chat/completions` (deliberately not `/v1/chat/completions` — see [06-gemini-accounts-and-webai.md](06-gemini-accounts-and-webai.md) for why). If `$cookieOverride` is given, sends `X-Gemini-1PSID`/`X-Gemini-1PSIDTS` headers.
-- `models()` — `GET /v1/models`.
+- `models()` — `GET /v1/models`, the **raw** catalog (includes `playwright/*`/`atlas/*` entries this gateway can't actually serve — see below).
+
+**`App\Services\Gateway\GatewayModelCatalog`** — filters that raw catalog down to only the plain `gemini-*` ids the chat-completions path can actually use (`playwright/*`/`atlas/*` always 400 there — see [06-gemini-accounts-and-webai.md](06-gemini-accounts-and-webai.md)). `usableModelIds()` is what both `Console\AppsController` (the "New App" model dropdown) and `Console\PlaygroundController` call instead of hitting `WebAiClient::models()` directly; `isUsable()` is also used by `Api\GatewayController::models()` (to filter the public `GET /v1/models` response) and by `StoreAppRequest` (to reject an unusable `default_model` server-side, since that endpoint can be called directly without going through the dropdown).
 
 ## Rate limiting & quota
 

@@ -273,10 +273,14 @@ return;
     return (
         <ConsoleModal open onClose={onClose}>
             <h3>Upload document · {kb.name}</h3>
-            <p className="lead">.txt or .md only in this MVP. We extract → chunk → embed in the background.</p>
+            <p className="lead">.txt, .md, .pdf, or .docx, up to 20MB. We extract → chunk → embed in the background.</p>
             <div className="field">
                 <label>File</label>
-                <input type="file" accept=".txt,.md" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+                <input
+                    type="file"
+                    accept=".txt,.md,.pdf,.docx"
+                    onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                />
             </div>
             {error && <p style={{ color: 'var(--coral)', fontSize: 13 }}>{error}</p>}
             <div className="modal-actions">

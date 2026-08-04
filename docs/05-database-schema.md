@@ -50,7 +50,8 @@ Every table below except `tenants` and the Laravel-stock ones (`users`, `cache`,
 | tenant_id | FK → tenants | |
 | app_id | FK → apps | |
 | name | string | |
-| token_hash | string, unique | sha256 of the raw token |
+| token_hash | string, unique | sha256 of the raw token — the sole auth lookup path |
+| token_encrypted | text, nullable | *(added 2026-08-03)* the raw token, Laravel `encrypted` cast (reversible) — lets the owner view it again later. Hidden from serialization by default, only ever read via the dedicated reveal endpoint. Null for tokens generated before this column existed — those can't be recovered, only re-hashed values ever existed for them. |
 | prefix | string | first 10 chars of the raw token, for display |
 | rate_limit | unsigned int | default 60 (requests/minute) |
 | daily_quota | unsigned int | default 1000 |
@@ -64,7 +65,7 @@ Every table below except `tenants` and the Laravel-stock ones (`users`, `cache`,
 | token_id | FK → api_tokens, nullable | `nullOnDelete` |
 | upstream_account_id | FK → upstream_accounts, nullable | `nullOnDelete` |
 | model | string | |
-| prompt_tokens, completion_tokens, total_tokens | unsigned int | default 0 |
+| prompt_tokens, completion_tokens, total_tokens | unsigned int | default 0 (stays 0 on any non-`success` row). On success, estimated via [`TokenEstimator`](../ai-bridge/app/Services/Gateway/TokenEstimator.php) — Gemini's web interface never reports real token counts, so this is a `cl100k_base`-tokenizer approximation of the actual request/response text, not an exact count. |
 | latency_ms | unsigned int, nullable | |
 | status | string | `success`\|`error` |
 | error_type | string, nullable | e.g. `no_active_accounts`, `upstream_unreachable`, `upstream_error`, `all_accounts_unavailable` |
@@ -106,7 +107,7 @@ Max 5 accounts per user, enforced in `Api\UpstreamAccountController::store()`, n
 | tenant_id | FK → tenants | |
 | knowledge_base_id | FK → knowledge_bases | |
 | source_name | string | original filename |
-| source_type | string | `txt`\|`md` — v1 supports plain text only |
+| source_type | string | `txt`\|`md`\|`pdf`\|`docx` — see [`DocumentTextExtractor`](../ai-bridge/app/Services/Rag/DocumentTextExtractor.php) for how each is turned into plain text before chunking |
 | status | string | default `indexing`; `indexing`\|`ready`\|`failed` |
 
 **`chunks`**

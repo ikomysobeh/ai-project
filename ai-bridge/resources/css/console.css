@@ -652,3 +652,112 @@
 .console .note b {
     color: var(--text);
 }
+
+/* ---------- Rendered markdown (docs page) ---------- */
+.console .docs-content {
+    max-width: 860px;
+    line-height: 1.65;
+}
+.console .docs-content h1,
+.console .docs-content h2,
+.console .docs-content h3,
+.console .docs-content h4 {
+    color: var(--text);
+    font-weight: 650;
+    letter-spacing: -0.01em;
+    margin: 1.6em 0 0.6em;
+}
+.console .docs-content h1 {
+    font-size: 22px;
+    margin-top: 0;
+}
+.console .docs-content h2 {
+    font-size: 17px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--line);
+}
+.console .docs-content h3 {
+    font-size: 14.5px;
+}
+.console .docs-content h1:first-child,
+.console .docs-content h2:first-child,
+.console .docs-content h3:first-child {
+    margin-top: 0;
+}
+.console .docs-content p,
+.console .docs-content ul,
+.console .docs-content ol {
+    margin: 0 0 1em;
+    color: var(--text);
+    font-size: 13.5px;
+}
+.console .docs-content ul,
+.console .docs-content ol {
+    padding-left: 1.4em;
+}
+.console .docs-content li {
+    margin-bottom: 0.35em;
+}
+.console .docs-content a {
+    color: var(--cyan);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+.console .docs-content code {
+    font-family: var(--mono);
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 12.5px;
+}
+.console .docs-content pre {
+    background: var(--ink);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 14px;
+    overflow: auto;
+    margin: 0 0 1.2em;
+}
+.console .docs-content pre code {
+    background: none;
+    border: 0;
+    padding: 0;
+}
+.console .docs-content blockquote {
+    margin: 0 0 1.2em;
+    padding: 2px 14px;
+    border-left: 3px solid var(--cyan);
+    color: var(--muted);
+    background: #12171e;
+    border-radius: 0 8px 8px 0;
+}
+.console .docs-content hr {
+    border: 0;
+    border-top: 1px solid var(--line);
+    margin: 2em 0;
+}
+.console .docs-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0 0 1.4em;
+    font-size: 13px;
+}
+.console .docs-content th,
+.console .docs-content td {
+    text-align: left;
+    padding: 8px 12px;
+    border: 1px solid var(--line);
+    vertical-align: top;
+}
+.console .docs-content th {
+    background: var(--panel-2);
+    color: var(--muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+.console .docs-content strong {
+    color: var(--text);
+    font-weight: 650;
+}

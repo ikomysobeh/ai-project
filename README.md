@@ -24,6 +24,10 @@ Then open **http://localhost:8080** and register — this creates your workspace
 
 ## Documentation
 
-**Start with [`docs/README.md`](docs/README.md)** — a full developer-onboarding doc set covering architecture, setup, the backend, the frontend, the database, the Gemini account/WebAI-to-API integration (read this one before touching accounts or the gateway), the request pipeline, deployment, the full API reference, known gotchas, and a [roadmap of ideas for what's next](docs/11-roadmap-and-ideas.md).
+**Just want to *use* TokenForge?** → [docs/12-using-the-platform.md](docs/12-using-the-platform.md) — creating apps and tokens, adding Gemini accounts, RAG, and the full `/v1/chat/completions` parameter reference.
+
+**Working on the codebase?** → **Start with [`docs/README.md`](docs/README.md)** — a full developer-onboarding doc set covering architecture, setup, the backend, the frontend, the database, the Gemini account/WebAI-to-API integration (read this one before touching accounts or the gateway), the request pipeline, deployment, the full API reference, known gotchas, and a [roadmap of ideas for what's next](docs/11-roadmap-and-ideas.md).
+
+**Deploying to a real server?** → [docs/13-production-deployment.md](docs/13-production-deployment.md) — going from local Docker Compose to a VPS with a host Nginx + Let's Encrypt in front.
 
 The original scope/planning docs are still at the repo root for background: [`mvp-scope.md`](mvp-scope.md), [`AI-BUILD-BRIEF.md`](AI-BUILD-BRIEF.md). Where they disagree with `docs/`, `docs/` reflects what's actually built.

@@ -25,7 +25,7 @@ All under `resources/js/pages/**`.
 
 **Console** (all under `resources/js/pages/console/**`, all wrapped in `ConsoleLayout`, all routes under `/console/*`):
 - `apps.tsx` — Apps list; "New App" modal `POST /api/apps`.
-- `tokens.tsx` — API Tokens; generate (`POST /api/apps/{id}/tokens`, raw token shown once) and revoke (`DELETE /api/tokens/{id}`).
+- `tokens.tsx` — API Tokens; generate (`POST /api/apps/{id}/tokens`, with an expiry preset — never/30d/90d/1y/custom), view the raw value again anytime (`POST /api/tokens/{id}/reveal`, hidden for tokens created before this existed), and revoke (`DELETE /api/tokens/{id}`).
 - `accounts.tsx` — **Gemini Accounts** rotation pool. "Add Gemini account" (`POST /api/accounts` with `{label, secure_1psid, secure_1psidts}`), "Test" (`POST /api/accounts/{id}/test`), "Re-authenticate" for expired accounts (`POST /api/accounts/{id}/reauth`). Shows `last_error` (the real upstream validation failure reason) as a toast and as a tooltip on the status pill. See [06-gemini-accounts-and-webai.md](06-gemini-accounts-and-webai.md).
 - `knowledge.tsx` — Knowledge Bases; create, upload (`multipart/form-data` → `POST /api/knowledge-bases/{id}/documents`), view/delete documents.
 - `playground.tsx` — interactive gateway test console; `POST /api/playground/{appId}/send`, session-authenticated equivalent of the real `/v1/chat/completions` call. Shows the equivalent `curl` command.
