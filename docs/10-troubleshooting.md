@@ -2,6 +2,21 @@
 
 Known issues every new dev on this project is likely to hit, in rough order of likelihood.
 
+## "I added/changed code the `queue` container uses, but it's still behaving like the old version"
+
+`php artisan queue:work` (the `queue` container's whole job — see [08-deployment-docker.md](08-deployment-docker.md)) boots the framework **once** when the process starts and keeps that same PHP process alive for every job after that, unlike `app`'s PHP-FPM workers (which effectively pick up file changes per-request, since `opcache.validate_timestamps=1` is set — see `ai-bridge/docker/php/local.ini`). If the `queue` container has been running since before you added a new class, ran `composer require`, or changed anything `IngestDocumentJob` (or anything it calls) depends on, it's still executing the code as it was when it booted — new classes, new Composer packages, and edited files are all invisible to it until it restarts.
+
+Symptom: a background job (right now, only RAG document ingestion) silently fails or behaves like an old version of the code, even though `app` clearly has the new code (e.g. upload validation already accepts a new file type, but ingestion still fails).
+
+Fix: `docker compose restart queue` after any change that touches the ingestion path — new Composer packages, new/changed classes under `app/Jobs`, `app/Services/Rag`, etc. There's no auto-reload for this container; it's a plain long-running worker process like any other Laravel queue deployment.
+
+## "Gateway calls fail with `Yethee\Tiktoken\Exception\IOError` / `Checksum failed`"
+
+Token-usage estimation ([`TokenEstimator`](../ai-bridge/app/Services/Gateway/TokenEstimator.php)) needs to download a BPE vocab file from `openaipublic.blob.core.windows.net` the first time it runs in a given `app` container — see [08-deployment-docker.md](08-deployment-docker.md#outbound-internet-access-app-container). Two distinct causes land on the same error:
+
+- **No outbound internet access from `app`.** If the host/firewall blocks it, every gateway call fails until that's fixed — there's no offline fallback.
+- **The cache directory (`storage/app/tiktoken-cache/`) was created by the wrong user.** If you ever exercise this code via `docker exec` (which runs as `root` by default) before a real request does (which runs as `www-data`, the php-fpm worker user), the directory ends up `root`-owned at `0750` — unreadable/unwritable by `www-data`, so real requests then fail even though the vocab file is already sitting right there. Fix: `docker exec tokenforge_app chown -R www-data:www-data storage/app/tiktoken-cache`. Avoid re-triggering it: test this path with `docker exec -u www-data ...` instead of plain `docker exec`.
+
 ## "Docker build fails: `invalid file request public/storage`"
 
 ```

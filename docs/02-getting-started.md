@@ -40,7 +40,7 @@ This mirrors the project's own Definition of Done (see [`mvp-scope.md`](../mvp-s
 1. **Register** at `http://localhost:8080/register` — this creates a brand-new tenant *and* an owner user in one step (fill in a workspace name, your name, email, password).
 2. **Add a Gemini account** — go to **Gemini Accounts** in the console sidebar → *Add Gemini account* → paste `__Secure-1PSID` and `__Secure-1PSIDTS`. See [How to get Gemini cookies](#how-to-get-gemini-cookies-for-an-account) below — **read the fragility warning**, it's the single most common thing that trips people up.
 3. **Create an app** — **Apps** → *New App* → name it, pick a default model.
-4. **Generate a token** — **API Tokens** → *Generate token* for that app. The raw token is shown **once** — copy it now.
+4. **Generate a token** — **API Tokens** → *Generate token* for that app. The raw token is shown right away — copy it, or come back to **API Tokens** and hit **View** on that row anytime later (it's stored encrypted, not just hashed).
 5. *(optional)* **Create a knowledge base** — **Knowledge** → *New knowledge base* → upload a `.md`/`.txt` file → wait for it to reach `ready` → attach it to your app (from the Apps page).
 6. **Call the gateway**:
    ```bash

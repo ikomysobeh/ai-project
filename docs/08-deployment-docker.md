@@ -60,3 +60,9 @@ Volumes:
 ## Networking model
 
 Every service reaches every other one **by service name** on the `tokenforge` bridge network (`http://webai:6969`, `http://ollama:11434`, `postgres:5432`, etc.) — never by `localhost` inside a container. Only `nginx` (`8080`), `vite` (`5173`), `postgres` (`5432`), `ollama` (`11434`), and `webai` (`127.0.0.1:6969`, loopback-only) are published to the host, and the last three are explicitly commented as debug-only conveniences to drop in a real deployment. `webai` is never meant to be reachable from outside the Docker network in production — see [01-architecture.md](01-architecture.md#key-rule-laravel-is-the-only-thing-that-talks-to-webai-to-api).
+
+## Outbound internet access (`app` container)
+
+One exception to "internal network only": [`TokenEstimator`](../ai-bridge/app/Services/Gateway/TokenEstimator.php) (token-usage estimation on every successful gateway call — see [07-gateway-and-rag.md](07-gateway-and-rag.md)) downloads a ~1.7MB BPE vocab file from `openaipublic.blob.core.windows.net` the first time it runs in a given `app` container. This needs real outbound internet access from `app`, not just the internal Docker network — if the host/firewall blocks that, the first gateway call after a container start will fail with a `Yethee\Tiktoken\Exception\IOError` (see [10-troubleshooting.md](10-troubleshooting.md)).
+
+The download is cached under `storage/app/tiktoken-cache/` (bind-mounted, survives a container recreate), so it only happens once per host, not once per container start.

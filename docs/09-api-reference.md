@@ -9,7 +9,7 @@ Registered outside the `/api` prefix on purpose (see [03-backend-laravel.md](03-
 | POST | `/v1/chat/completions` | `Api\GatewayController@chatCompletions` | `api.token`, `api.limits` |
 | GET | `/v1/models` | `Api\GatewayController@models` | `api.token` |
 
-Auth: `Authorization: Bearer <token>` (a raw token generated via the console, shown once). Full pipeline: [07-gateway-and-rag.md](07-gateway-and-rag.md).
+Auth: `Authorization: Bearer <token>` (a raw token generated via the console — viewable again anytime from the Tokens page, not just at creation). Full pipeline: [07-gateway-and-rag.md](07-gateway-and-rag.md).
 
 ## Management API (`/api/*`) — Sanctum session auth
 
@@ -35,6 +35,7 @@ All under `api` middleware group + `SetTenantContext` appended; per-route `auth:
 | GET | `/api/apps/{app}/tokens` | `Api\ApiTokenController@index` | `auth:sanctum` |
 | POST | `/api/apps/{app}/tokens` | `Api\ApiTokenController@store` | `auth:sanctum` |
 | DELETE | `/api/tokens/{token}` | `Api\ApiTokenController@destroy` | `auth:sanctum` |
+| POST | `/api/tokens/{token}/reveal` | `Api\ApiTokenController@reveal` | `auth:sanctum` |
 
 ### Gemini account pool
 | Method | Path | Controller | Middleware |
@@ -95,7 +96,7 @@ Never called by anything except ai-bridge's own [`WebAiClient`](../ai-bridge/app
 | Method | Path | Notes |
 |---|---|---|
 | POST | `/v1/temporary/chat/completions` | **The one TokenForge actually uses.** Accepts `X-Gemini-1PSID`/`X-Gemini-1PSIDTS` override headers. Stateless, no conversation persistence. See [06-gemini-accounts-and-webai.md](06-gemini-accounts-and-webai.md). |
-| GET | `/v1/models` | Model catalog across registered providers (also called directly by `Api\GatewayController@models`). |
+| GET | `/v1/models` | Raw model catalog across registered providers, including `playwright/*`/`atlas/*` entries — `Api\GatewayController@models` calls this then filters those out via `GatewayModelCatalog` before returning to the caller (see [03-backend-laravel.md](03-backend-laravel.md)). |
 | POST | `/v1/chat/completions` | WebAI-to-API's own primary path — single process-wide account, **not used by TokenForge's rotation**. |
 | GET | `/v1/gems` | List Gemini Gems for the singleton account. |
 | GET/DELETE | `/v1/conversations`, `/v1/conversations/{id}` | Manage locally persisted (SQLite) conversation snapshots — singleton-account only. |

@@ -23,6 +23,15 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Trusting '*' is safe here: in every deployment of this app
+        // (including production — see docs/13-production-deployment.md),
+        // the only thing ever forwarding requests to this container is a
+        // reverse proxy on the same machine (loopback) — never an
+        // untrusted network hop. Without this, Laravel can't tell a
+        // request arrived over HTTPS once a proxy terminates TLS in front
+        // of it, which breaks secure cookies and https:// URL generation.
+        $middleware->trustProxies(at: '*');
+
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
 
         $middleware->web(append: [

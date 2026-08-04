@@ -88,7 +88,7 @@ Full detail: [07-gateway-and-rag.md](07-gateway-and-rag.md).
 ### Flow 2 — RAG ingestion (background)
 
 ```
-user uploads a .txt/.md file → Document row created (status: indexing) → IngestDocumentJob queued
+user uploads a .txt/.md/.pdf/.docx file → Document row created (status: indexing) → IngestDocumentJob queued
   → extract text → chunk (~800 tokens, ~100 overlap) → embed each chunk via Ollama → store in pgvector
   → Document flips to ready/failed → KnowledgeBase status recomputed from its documents
 ```

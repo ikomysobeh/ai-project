@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Api;
 
+use App\Services\Rag\DocumentTextExtractor;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreDocumentRequest extends FormRequest
@@ -12,17 +13,19 @@ class StoreDocumentRequest extends FormRequest
         return [
             // Validated by extension via a closure, not Laravel's `mimes`
             // rule — Symfony's MIME guesser doesn't reliably map .md to a
-            // mime type, which would reject legitimate uploads.
-            // mvp-scope.md §8: txt + md only.
+            // mime type, which would reject legitimate uploads. Extended
+            // beyond mvp-scope.md §8's original txt+md-only decision to
+            // also accept pdf/docx (extracted to plain text before
+            // chunking — see DocumentTextExtractor).
             'file' => [
                 'required',
                 'file',
-                'max:5120', // KB
+                'max:20480', // KB (~20MB — PDFs/Word docs run larger than plain text)
                 function (string $attribute, $value, \Closure $fail): void {
                     $extension = strtolower($value->getClientOriginalExtension());
 
-                    if (! in_array($extension, ['txt', 'md'], true)) {
-                        $fail('The file must be a .txt or .md file.');
+                    if (! in_array($extension, DocumentTextExtractor::SUPPORTED_EXTENSIONS, true)) {
+                        $fail('The file must be a .txt, .md, .pdf, or .docx file.');
                     }
                 },
             ],

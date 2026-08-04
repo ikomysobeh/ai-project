@@ -30,6 +30,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('apps/{app}/tokens', [ApiTokenController::class, 'index']);
     Route::post('apps/{app}/tokens', [ApiTokenController::class, 'store']);
     Route::delete('tokens/{token}', [ApiTokenController::class, 'destroy']);
+    Route::post('tokens/{token}/reveal', [ApiTokenController::class, 'reveal']);
 
     Route::get('accounts', [UpstreamAccountController::class, 'index']);
     Route::post('accounts', [UpstreamAccountController::class, 'store']);
