@@ -4,7 +4,12 @@ use App\Http\Controllers\Console\DashboardController;
 use App\Http\Controllers\InviteAcceptController;
 use Illuminate\Support\Facades\Route;
 
-Route::inertia('/', 'welcome')->name('home');
+// No public marketing page — send visitors straight to where they belong.
+Route::get('/', function () {
+    return auth()->check()
+        ? redirect()->route('dashboard')
+        : redirect()->route('login');
+})->name('home');
 
 Route::get('invite/{token}', [InviteAcceptController::class, 'show'])->name('invite.show');
 
